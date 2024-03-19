@@ -267,7 +267,10 @@ def readCamerasFromTransforms(path, transformsfile, white_background, extension=
             fovx = focal2fov(contents['fl_x'],contents['w'])
         frames = contents["frames"]
         for idx, frame in enumerate(frames):
-            cam_name = os.path.join(path, frame["file_path"] + extension)
+            if "." in frame['file_path']:
+                cam_name = os.path.join(path, frame["file_path"])
+            else:
+                cam_name = os.path.join(path, frame["file_path"] + extension)
             time = mapper[frame["time"]]
             matrix = np.linalg.inv(np.array(frame["transform_matrix"]))
             R = -np.transpose(matrix[:3,:3])
