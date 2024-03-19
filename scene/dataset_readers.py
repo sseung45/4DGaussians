@@ -181,6 +181,15 @@ def readColmapSceneInfo(path, images, eval, llffhold=8):
             xyz, rgb, _ = read_points3D_binary(bin_path)
         except:
             xyz, rgb, _ = read_points3D_text(txt_path)
+        if xyz == None:
+            num_pts = 2000
+            print(f"Generating random point cloud ({num_pts})...")
+
+            # We create random points inside the bounds of the synthetic Blender scenes
+            xyz = np.random.random((num_pts, 3)) * 2.6 - 1.3
+            shs = np.random.random((num_pts, 3)) / 255.0
+            pcd = BasicPointCloud(points=xyz, colors=SH2RGB(shs), normals=np.zeros((num_pts, 3)))
+            rgb = SH2RGB(shs) * 255
         storePly(ply_path, xyz, rgb)
     
     try:
@@ -235,7 +244,10 @@ def generateCamerasFromTransforms(path, template_transformsfile, extension, maxt
     # breakpoint()
     # load a single image to get image info.
     for idx, frame in enumerate(template_json["frames"]):
-        cam_name = os.path.join(path, frame["file_path"] + extension)
+        if extension in frame['file_path']:
+            cam_name = os.path.join(path, frame["file_path"])
+        else:
+            cam_name = os.path.join(path, frame["file_path"] + extension)
         image_path = os.path.join(path, cam_name)
         image_name = Path(cam_name).stem
         image = Image.open(image_path)
@@ -267,9 +279,16 @@ def readCamerasFromTransforms(path, transformsfile, white_background, extension=
             fovx = focal2fov(contents['fl_x'],contents['w'])
         frames = contents["frames"]
         for idx, frame in enumerate(frames):
-            cam_name = os.path.join(path, frame["file_path"] + extension)
+            if extension in frame['file_path']:
+                cam_name = os.path.join(path, frame["file_path"])
+            else:
+                cam_name = os.path.join(path, frame["file_path"] + extension)
             time = mapper[frame["time"]]
-            matrix = np.linalg.inv(np.array(frame["transform_matrix"]))
+            matrix = frame["transform_matrix"]
+            # opencl -> opengl
+            matrix = np.array(matrix)
+            matrix[1:3,:] = -matrix[1:3,:]
+            matrix = np.linalg.inv(matrix)
             R = -np.transpose(matrix[:3,:3])
             R[:,0] = -R[:,0]
             T = -matrix[:3, 3]
@@ -278,27 +297,35 @@ def readCamerasFromTransforms(path, transformsfile, white_background, extension=
             image_name = Path(cam_name).stem
             image = Image.open(image_path)
 
-            im_data = np.array(image.convert("RGBA"))
-
-            bg = np.array([1,1,1]) if white_background else np.array([0, 0, 0])
-
-            norm_data = im_data / 255.0
-            arr = norm_data[:,:,:3] * norm_data[:, :, 3:4] + bg * (1 - norm_data[:, :, 3:4])
-            image = Image.fromarray(np.array(arr*255.0, dtype=np.byte), "RGB")
-            image = PILtoTorch(image,(800,800))
-            fovy = focal2fov(fov2focal(fovx, image.shape[1]), image.shape[2])
-            FovY = fovy 
-            FovX = fovx
-
-            cam_infos.append(CameraInfo(uid=idx, R=R, T=T, FovY=FovY, FovX=FovX, image=image,
+            if "hypernerf" in path:
+                w = image.size[0]
+                h = image.size[1]
+                image = PILtoTorch(image,None)
+                image = image.to(torch.float32)[:3,:,:]
+                FovY = contents["camera_angle_y"]
+                FovX = fovx
+                cam_infos.append(CameraInfo(uid=idx, R=R, T=T, FovY=FovY, FovX=FovX, image=image,
+                            image_path=image_path, image_name=image_name, width=w, height=h,
+                            time = time, mask=None))
+            else:
+                im_data = np.array(image.convert("RGBA"))
+                bg = np.array([1,1,1]) if white_background else np.array([0, 0, 0])
+                norm_data = im_data / 255.0
+                arr = norm_data[:,:,:3] * norm_data[:, :, 3:4] + bg * (1 - norm_data[:, :, 3:4])
+                image = Image.fromarray(np.array(arr*255.0, dtype=np.byte), "RGB")
+                image = PILtoTorch(image,(800,800))
+                fovy = focal2fov(fov2focal(fovx, image.shape[1]), image.shape[2])
+                FovY = fovy 
+                FovX = fovx
+                cam_infos.append(CameraInfo(uid=idx, R=R, T=T, FovY=FovY, FovX=FovX, image=image,
                             image_path=image_path, image_name=image_name, width=image.shape[1], height=image.shape[2],
                             time = time, mask=None))
-            
+            fovy = focal2fov(fov2focal(fovx, image.shape[2]), image.shape[1])
     return cam_infos
 def read_timeline(path):
-    with open(os.path.join(path, "transforms_train.json")) as json_file:
+    with open(os.path.join(path, "train_transforms.json")) as json_file:
         train_json = json.load(json_file)
-    with open(os.path.join(path, "transforms_test.json")) as json_file:
+    with open(os.path.join(path, "test_transforms.json")) as json_file:
         test_json = json.load(json_file)  
     time_line = [frame["time"] for frame in train_json["frames"]] + [frame["time"] for frame in test_json["frames"]]
     time_line = set(time_line)
@@ -314,11 +341,15 @@ def read_timeline(path):
 def readNerfSyntheticInfo(path, white_background, eval, extension=".png"):
     timestamp_mapper, max_time = read_timeline(path)
     print("Reading Training Transforms")
-    train_cam_infos = readCamerasFromTransforms(path, "transforms_train.json", white_background, extension, timestamp_mapper)
+    train_cam_infos = readCamerasFromTransforms(path, "train_transforms.json", white_background, extension, timestamp_mapper)
     print("Reading Test Transforms")
-    test_cam_infos = readCamerasFromTransforms(path, "transforms_test.json", white_background, extension, timestamp_mapper)
+    test_cam_infos = readCamerasFromTransforms(path, "test_transforms.json", white_background, extension, timestamp_mapper)
     print("Generating Video Transforms")
-    video_cam_infos = generateCamerasFromTransforms(path, "transforms_train.json", extension, max_time)
+    if "hypernerf" in path:
+        video_cam_infos = copy.deepcopy(test_cam_infos)
+    else:
+        video_cam_infos = generateCamerasFromTransforms(path, "train_transforms.json", extension, max_time)
+        
     if not eval:
         train_cam_infos.extend(test_cam_infos)
         test_cam_infos = []
