@@ -278,7 +278,7 @@ def readCamerasFromTransforms(path, transformsfile, white_background, extension=
             fovx = focal2fov(contents['fl_x'],contents['w'])
         frames = contents["frames"]
         for idx, frame in enumerate(frames):
-            if "." in frame['file_path']:
+            if extension in frame['file_path']:
                 cam_name = os.path.join(path, frame["file_path"])
             else:
                 cam_name = os.path.join(path, frame["file_path"] + extension)
