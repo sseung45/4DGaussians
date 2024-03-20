@@ -68,7 +68,7 @@ for frame in meta['frames']:
     R = -np.transpose(matrix[:3,:3])
     R[:,0] = -R[:,0]
     T = -matrix[:3, 3]
-    T = -np.matmul(R,T)
+    #T = -np.matmul(R,T)
     T = [str(i) for i in T]
     qevc = [str(i) for i in rotmat2qvec(np.transpose(R))]
     print(idx+1," ".join(qevc)," ".join(T),1,frame['file_path'].split('/')[-1]+".png","\n",file=object_images_file)
