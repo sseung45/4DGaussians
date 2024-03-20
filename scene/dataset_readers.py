@@ -311,9 +311,9 @@ def readCamerasFromTransforms(path, transformsfile, white_background, extension=
             
     return cam_infos
 def read_timeline(path):
-    with open(os.path.join(path, "transforms_train.json")) as json_file:
+    with open(os.path.join(path, "train_transforms.json")) as json_file:
         train_json = json.load(json_file)
-    with open(os.path.join(path, "transforms_test.json")) as json_file:
+    with open(os.path.join(path, "test_transforms.json")) as json_file:
         test_json = json.load(json_file)  
     time_line = [frame["time"] for frame in train_json["frames"]] + [frame["time"] for frame in test_json["frames"]]
     time_line = set(time_line)
