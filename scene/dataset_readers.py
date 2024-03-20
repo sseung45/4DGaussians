@@ -189,7 +189,8 @@ def readColmapSceneInfo(path, images, eval, llffhold=8):
             xyz = np.random.random((num_pts, 3)) * 2.6 - 1.3
             shs = np.random.random((num_pts, 3)) / 255.0
             pcd = BasicPointCloud(points=xyz, colors=SH2RGB(shs), normals=np.zeros((num_pts, 3)))
-        storePly(ply_path, xyz, SH2RGB(shs) * 255)
+            rgb = SH2RGB(shs) * 255
+        storePly(ply_path, xyz, rgb)
     
     try:
         pcd = fetchPly(ply_path)
@@ -328,11 +329,11 @@ def read_timeline(path):
 def readNerfSyntheticInfo(path, white_background, eval, extension=".png"):
     timestamp_mapper, max_time = read_timeline(path)
     print("Reading Training Transforms")
-    train_cam_infos = readCamerasFromTransforms(path, "transforms_train.json", white_background, extension, timestamp_mapper)
+    train_cam_infos = readCamerasFromTransforms(path, "train_transforms.json", white_background, extension, timestamp_mapper)
     print("Reading Test Transforms")
-    test_cam_infos = readCamerasFromTransforms(path, "transforms_test.json", white_background, extension, timestamp_mapper)
+    test_cam_infos = readCamerasFromTransforms(path, "test_transforms.json", white_background, extension, timestamp_mapper)
     print("Generating Video Transforms")
-    video_cam_infos = generateCamerasFromTransforms(path, "transforms_train.json", extension, max_time)
+    video_cam_infos = generateCamerasFromTransforms(path, "train_transforms.json", extension, max_time)
     if not eval:
         train_cam_infos.extend(test_cam_infos)
         test_cam_infos = []
