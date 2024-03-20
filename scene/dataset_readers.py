@@ -243,7 +243,7 @@ def generateCamerasFromTransforms(path, template_transformsfile, extension, maxt
     # breakpoint()
     # load a single image to get image info.
     for idx, frame in enumerate(template_json["frames"]):
-        if "." in frame['file_path']:
+        if extension in frame['file_path']:
             cam_name = os.path.join(path, frame["file_path"])
         else:
             cam_name = os.path.join(path, frame["file_path"] + extension)
