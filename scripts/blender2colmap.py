@@ -24,10 +24,10 @@ def rotmat2qvec(R):
     return qvec
 
 root_dir = sys.argv[1]
-colmap_dir = os.path.join(root_dir,"sparse_")
+colmap_dir = os.path.join(root_dir,"sparse/0")
 if not os.path.exists(colmap_dir):
     os.makedirs(colmap_dir)
-imagecolmap_dir = os.path.join(root_dir,"image_colmap")
+imagecolmap_dir = os.path.join(root_dir,"images")
 if not os.path.exists(imagecolmap_dir):
     os.makedirs(imagecolmap_dir)
 
