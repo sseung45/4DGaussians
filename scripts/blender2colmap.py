@@ -73,7 +73,7 @@ for frame in meta['frames']:
     qevc = [str(i) for i in rotmat2qvec(np.transpose(R))]
     print(idx+1," ".join(qevc)," ".join(T),1,frame['file_path'].split('/')[-1]+".png","\n",file=object_images_file)
 
-    print(idx,"SIMPLE_PINHOLE",image_size[0],image_size[1],focal[0],image_size[0]/2,image_size[1]/2,file=object_cameras_file)
+    print(idx,"PINHOLE",image_size[0],image_size[1],focal[0],image_size[0]/2,image_size[1]/2,file=object_cameras_file)
     idx+=1
     # breakpoint()
     print(os.path.join(image_dir,frame['file_path']),os.path.join(imagecolmap_dir,frame['file_path'].split('/')[-1]+".png"))
