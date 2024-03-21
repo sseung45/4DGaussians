@@ -302,6 +302,8 @@ def readCamerasFromTransforms(path, transformsfile, white_background, extension=
             image = Image.fromarray(np.array(arr*255.0, dtype=np.byte), "RGB")
             image = PILtoTorch(image,(image.size[1],image.size[0]))
             fovy = focal2fov(fov2focal(fovx, image.shape[1]), image.shape[2])
+            print("width: ", image.shape[1])
+            ssssssssssssssssssss
             FovY = fovy 
             FovX = fovx
 
