@@ -300,12 +300,20 @@ def readCamerasFromTransforms(path, transformsfile, white_background, extension=
             norm_data = im_data / 255.0
             arr = norm_data[:,:,:3] * norm_data[:, :, 3:4] + bg * (1 - norm_data[:, :, 3:4])
             image = Image.fromarray(np.array(arr*255.0, dtype=np.byte), "RGB")
-            image = PILtoTorch(image,(800,800))
-            fovy = focal2fov(fov2focal(fovx, image.shape[1]), image.shape[2])
-            FovY = fovy 
-            FovX = fovx
 
-            cam_infos.append(CameraInfo(uid=idx, R=R, T=T, FovY=FovY, FovX=FovX, image=image,
+            if "hypernerf" in path:
+                image = PILtoTorch(image,(frame["width"],frame["height"]))
+                FovX = focal2fov(contents["camera_angle_x"],frame["width"])
+                FovY = focal2fov(contents["camera_angle_y"],frame["height"])
+                cam_infos.append(CameraInfo(uid=idx, R=R, T=T, FovY=FovY, FovX=FovX, image=image,
+                            image_path=image_path, image_name=image_name, width=image.shape[1], height=image.shape[2],
+                            time = time, mask=None))
+            else:
+                image = PILtoTorch(image,(800,800))
+                fovy = focal2fov(fov2focal(fovx, image.shape[1]), image.shape[2])
+                FovY = fovy 
+                FovX = fovx
+                cam_infos.append(CameraInfo(uid=idx, R=R, T=T, FovY=FovY, FovX=FovX, image=image,
                             image_path=image_path, image_name=image_name, width=image.shape[1], height=image.shape[2],
                             time = time, mask=None))
             
