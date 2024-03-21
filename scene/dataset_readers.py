@@ -300,7 +300,7 @@ def readCamerasFromTransforms(path, transformsfile, white_background, extension=
             norm_data = im_data / 255.0
             arr = norm_data[:,:,:3] * norm_data[:, :, 3:4] + bg * (1 - norm_data[:, :, 3:4])
             image = Image.fromarray(np.array(arr*255.0, dtype=np.byte), "RGB")
-            image = PILtoTorch(image,(800,800))
+            image = PILtoTorch(image,(image.size[0],image.size[1]))
             fovy = focal2fov(fov2focal(fovx, image.shape[1]), image.shape[2])
             FovY = fovy 
             FovX = fovx
@@ -337,6 +337,7 @@ def readNerfSyntheticInfo(path, white_background, eval, extension=".png"):
         video_cam_infos = copy.deepcopy(test_cam_infos)
     else:
         video_cam_infos = generateCamerasFromTransforms(path, "train_transforms.json", extension, max_time)
+
     if not eval:
         train_cam_infos.extend(test_cam_infos)
         test_cam_infos = []
