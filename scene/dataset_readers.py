@@ -335,7 +335,6 @@ def readNerfSyntheticInfo(path, white_background, eval, extension=".png"):
     print("Generating Video Transforms")
     if "hypernerf" in path:
         video_cam_infos = copy.deepcopy(test_cam_infos)
-        video_cam_infos.split="video"
     else:
         video_cam_infos = generateCamerasFromTransforms(path, "train_transforms.json", extension, max_time)
     if not eval:
