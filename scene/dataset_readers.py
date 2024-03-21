@@ -303,8 +303,8 @@ def readCamerasFromTransforms(path, transformsfile, white_background, extension=
 
             if "hypernerf" in path:
                 image = PILtoTorch(image,(frame["width"],frame["height"]))
-                FovX = focal2fov(contents["camera_angle_x"],frame["width"])
-                FovY = focal2fov(contents["camera_angle_y"],frame["height"])
+                FovX = focal2fov(contents["camera_angle_x"],frame["width"]*2)
+                FovY = focal2fov(contents["camera_angle_y"],frame["height"]*2)
                 cam_infos.append(CameraInfo(uid=idx, R=R, T=T, FovY=FovY, FovX=FovX, image=image,
                             image_path=image_path, image_name=image_name, width=frame["width"], height=frame["height"],
                             time = time, mask=None))
