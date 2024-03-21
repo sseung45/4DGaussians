@@ -48,7 +48,10 @@ class Scene:
         elif os.path.exists(os.path.join(args.source_path, "train_transforms.json")):
             print("Found transforms_train.json file, assuming Blender data set!")
             scene_info = sceneLoadTypeCallbacks["Blender"](args.source_path, args.white_background, args.eval, args.extension)
-            dataset_type="blender"
+            if "hypernerf" in args._source_path:
+                dataset_type="nerfies"
+            else:
+                dataset_type="blender"
         elif os.path.exists(os.path.join(args.source_path, "poses_bounds.npy")):
             scene_info = sceneLoadTypeCallbacks["dynerf"](args.source_path, args.white_background, args.eval)
             dataset_type="dynerf"
