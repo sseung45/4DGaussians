@@ -306,7 +306,7 @@ def readCamerasFromTransforms(path, transformsfile, white_background, extension=
                 FovX = focal2fov(contents["camera_angle_x"],frame["width"])
                 FovY = focal2fov(contents["camera_angle_y"],frame["height"])
                 cam_infos.append(CameraInfo(uid=idx, R=R, T=T, FovY=FovY, FovX=FovX, image=image,
-                            image_path=image_path, image_name=image_name, width=image.shape[1], height=image.shape[2],
+                            image_path=image_path, image_name=image_name, width=frame["width"], height=frame["height"],
                             time = time, mask=None))
             else:
                 image = PILtoTorch(image,(800,800))
