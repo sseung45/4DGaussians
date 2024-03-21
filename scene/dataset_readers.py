@@ -293,20 +293,28 @@ def readCamerasFromTransforms(path, transformsfile, white_background, extension=
             image_name = Path(cam_name).stem
             image = Image.open(image_path)
 
-            im_data = np.array(image.convert("RGBA"))
-
-            bg = np.array([1,1,1]) if white_background else np.array([0, 0, 0])
-
-            norm_data = im_data / 255.0
-            arr = norm_data[:,:,:3] * norm_data[:, :, 3:4] + bg * (1 - norm_data[:, :, 3:4])
-            image = Image.fromarray(np.array(arr*255.0, dtype=np.byte), "RGB")
-            image = PILtoTorch(image,(image.size[0],image.size[1]))
-            fovy = focal2fov(fov2focal(fovx, image.shape[2]), image.shape[1])
-            FovY = fovy 
-            FovX = fovx
-
-            cam_infos.append(CameraInfo(uid=idx, R=R, T=T, FovY=FovY, FovX=FovX, image=image,
-                            image_path=image_path, image_name=image_name, width=image.shape[2], height=image.shape[1],
+            if "hypernerf" in path:
+                w = image.size[0]
+                h = image.size[1]
+                image = PILtoTorch(image,None)
+                image = image.to(torch.float32)[:3,:,:]
+                FovY = focal2fov(frame["camera_angle_y"], h)
+                FovX = focal2fov(frame["camera_angle_x"], w)
+                cam_infos.append(CameraInfo(uid=idx, R=R, T=T, FovY=FovY, FovX=FovX, image=image,
+                            image_path=image_path, image_name=image_name, width=w, height=h,
+                            time = time, mask=None))
+            else:
+                im_data = np.array(image.convert("RGBA"))
+                bg = np.array([1,1,1]) if white_background else np.array([0, 0, 0])
+                norm_data = im_data / 255.0
+                arr = norm_data[:,:,:3] * norm_data[:, :, 3:4] + bg * (1 - norm_data[:, :, 3:4])
+                image = Image.fromarray(np.array(arr*255.0, dtype=np.byte), "RGB")
+                image = PILtoTorch(image,(800,800))
+                fovy = focal2fov(fov2focal(fovx, image.shape[1]), image.shape[2])
+                FovY = fovy 
+                FovX = fovx
+                cam_infos.append(CameraInfo(uid=idx, R=R, T=T, FovY=FovY, FovX=FovX, image=image,
+                            image_path=image_path, image_name=image_name, width=image.shape[1], height=image.shape[2],
                             time = time, mask=None))
             
     return cam_infos
@@ -337,7 +345,7 @@ def readNerfSyntheticInfo(path, white_background, eval, extension=".png"):
         video_cam_infos = copy.deepcopy(test_cam_infos)
     else:
         video_cam_infos = generateCamerasFromTransforms(path, "train_transforms.json", extension, max_time)
-
+        
     if not eval:
         train_cam_infos.extend(test_cam_infos)
         test_cam_infos = []
