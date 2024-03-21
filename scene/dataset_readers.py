@@ -301,14 +301,12 @@ def readCamerasFromTransforms(path, transformsfile, white_background, extension=
             arr = norm_data[:,:,:3] * norm_data[:, :, 3:4] + bg * (1 - norm_data[:, :, 3:4])
             image = Image.fromarray(np.array(arr*255.0, dtype=np.byte), "RGB")
             image = PILtoTorch(image,(image.size[0],image.size[1]))
-            fovy = focal2fov(fov2focal(fovx, image.shape[1]), image.shape[2])
-            print("image.shape[1]: ", image.shape[1])
-            sssssssssssssssss
+            fovy = focal2fov(fov2focal(fovx, image.shape[2]), image.shape[1])
             FovY = fovy 
             FovX = fovx
 
             cam_infos.append(CameraInfo(uid=idx, R=R, T=T, FovY=FovY, FovX=FovX, image=image,
-                            image_path=image_path, image_name=image_name, width=image.shape[1], height=image.shape[2],
+                            image_path=image_path, image_name=image_name, width=image.shape[2], height=image.shape[1],
                             time = time, mask=None))
             
     return cam_infos
