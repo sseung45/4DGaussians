@@ -27,7 +27,7 @@ def formatting(split):
         matrix = frame["transform_matrix"]
         # opengl -> opencl
         matrix = np.array(matrix)
-        matrix = -matrix[1:3,:]
+        matrix[1:3,:] = -matrix[1:3,:]
         new_frame["transform_matrix"] = matrix.tolist()
 
         os.remove(old_imgname)

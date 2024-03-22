@@ -287,7 +287,7 @@ def readCamerasFromTransforms(path, transformsfile, white_background, extension=
             matrix = frame["transform_matrix"]
             # opencl -> opengl
             matrix = np.array(matrix)
-            matrix = -matrix[1:3,:]
+            matrix[1:3,:] = -matrix[1:3,:]
             matrix = np.linalg.inv(matrix)
             R = -np.transpose(matrix[:3,:3])
             R[:,0] = -R[:,0]
