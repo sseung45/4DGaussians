@@ -284,7 +284,10 @@ def readCamerasFromTransforms(path, transformsfile, white_background, extension=
             else:
                 cam_name = os.path.join(path, frame["file_path"] + extension)
             time = mapper[frame["time"]]
-            matrix = np.linalg.inv(np.array(frame["transform_matrix"]))
+            matrix = frame["transform_matrix"]
+            # opencl -> opengl
+            matrix = -matrix[1:3,:]
+            matrix = np.linalg.inv(np.array(matrix))
             R = -np.transpose(matrix[:3,:3])
             R[:,0] = -R[:,0]
             T = -matrix[:3, 3]

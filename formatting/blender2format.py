@@ -3,7 +3,7 @@ import json
 from PIL import Image
 import shutil
 
-data_path = "./data/dnerf/trex/"
+data_path = "./data/dnerf/bouncingballs/"
 
 def formatting(split):
     with open(data_path+"transforms_"+split+".json") as f:
@@ -24,6 +24,8 @@ def formatting(split):
         new_frame["height"] = image.size[1]
         new_frame["width"] = image.size[0]
         new_frame["transform_matrix"] = frame["transform_matrix"]
+        # opengl -> opencl
+        new_frame["transform_matrix"] = -new_frame["transform_matrix"][1:3,:]
 
         os.remove(old_imgname)
         new_transforms["frames"].append(new_frame)
