@@ -32,6 +32,12 @@ Light Gaussian implementation: [This link](https://github.com/pablodawson/4DGaus
 
 2024.02.27: Accepted by CVPR 2024. We delete some logging settings for debugging, the corrected training time is only **8 mins** (20 mins before) in D-NeRF datasets and **30 mins** (1 hour before) in HyperNeRF datasets. The rendering quality is not affected.
 
+## Change Dataset Format
+```
+python dnerf2format.py (set data_path in dnerf2format.py)
+python hyper2format.py --output_path [output name] --datadir [dataset path]
+```
+
 ## Environmental Setups
 
 Please follow the [3D-GS](https://github.com/graphdeco-inria/gaussian-splatting) to install the relative packages.
